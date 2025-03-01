@@ -1,40 +1,69 @@
 import os  
 os.system('cls')
 
-class Static_Study: # OBJECT ========================================================
-    # PROPERTIES --------------------------------------------------------------------
-    class Data: # struct for problem data
-        def __init__(self):
-            self.rho = 1.2754       # kg/m^3
-            self.V = 100            # m/s
-            self.S = 25             # m^2
-            self.L = 5000           # N
-            self.D = 1000           # N
+import numpy as np
 
-    class Result: # initalizating struct for results
+class Static_Study:  # OBJECT ========================================================
+    # PROPERTIES --------------------------------------------------------------------
+    class Data:  # struct for problem data
         def __init__(self):
+            # Parâmetros
+            self.rho = 1.225  # Densidade do ar (kg/m³)
+            self.V = 50       # Velocidade do fluxo (m/s)
+            self.S = 10       # Área da asa (m²)
+            self.c = 1.5      # Corda média aerodinâmica (m)
+            self.mu = 1.81e-5 # Viscosidade dinâmica do ar (Pa·s)
+            self.m = 500      # Massa da aeronave (kg)
+            self.g = 9.81     # Gravidade (m/s²)
+            self.alpha = 5    # Ângulo de ataque (graus)
+
+    class Result:  # initializing struct for results
+        def __init__(self):
+            self.L = 0
+            self.D = 0
             self.C_L = 0
             self.C_D = 0
 
     # METHODS -----------------------------------------------------------------------
-    ## constructor
+    # constructor
     def __init__(self): 
         self.data = self.Data()
         self.result = self.Result()
+
+        self.coeficientes_aprox()  # Calcula coeficientes aproximados
+        self.aero_forces()         # Calcula as forças aerodinâmicas
+        self.coeficientes()        # Calcula coeficientes mais exatos
+
+    def coeficientes_aprox(self):
+        """ Calcula C_L e C_D a partir do ângulo de ataque e número de Reynolds """
+        alpha = np.deg2rad(self.data.alpha)  # Converte para radianos
         
-        self.coeficientes()
+        # Calcular o número de Reynolds
+        Re = (self.data.rho * self.data.V * self.data.c) / self.data.mu
+        
+        # ângulos pequenos (asa fina) (teoria da linha sustentadora)
+        self.result.C_L = 2 * np.pi * alpha  
 
-    ## calculate aerodinamic coeficients 
+        # coeficiente de atrito C_f para fluxo turbulento
+        C_f = 0.074 / (Re**0.2)
+        
+        # considerando apenas o arrasto de pele
+        self.result.C_D = C_f 
+
+    def aero_forces(self):
+        """ Calcula as forças aerodinâmicas """
+        # Lift force
+        self.result.L = 0.5 * self.data.rho * self.data.V**2 * self.data.S * self.result.C_L
+        # Drag force
+        self.result.D = 0.5 * self.data.rho * self.data.V**2 * self.data.S * self.result.C_D
+
     def coeficientes(self):
-        L = self.data.L
-        D = self.data.D 
-        rho = self.data.rho#
-        V = self.data.V 
-        S = self.data.S
-
-        self.result.C_L = L / (0.5 * rho * V**2 * S)
-        self.result.C_D = D / (0.5 * rho * V**2 * S)
+        """ Calcula coeficientes a partir das forças aerodinâmicas """
+        # Lift coefficient
+        self.result.C_L = self.result.L / (0.5 * self.data.rho * self.data.V**2 * self.data.S)
+        # Drag coefficient
+        self.result.C_D = self.result.D / (0.5 * self.data.rho * self.data.V**2 * self.data.S)
 
 # CALL ==============================================================================
 aero = Static_Study()
-print(f"C_L: {aero.result.C_L}, C_D: {aero.result.C_D}")
+print(f"C_L: {aero.result.C_L}, C_D: {aero.result.C_D}, L: {aero.result.L}, D: {aero.result.D}")
