@@ -1,14 +1,15 @@
 import os  
 os.system('cls')
 
-class Static_Study: # OBJECT ==============================================================
+class Static_Study: # OBJECT ========================================================
     # PROPERTIES --------------------------------------------------------------------
     class Data: # struct for problem data
         def __init__(self):
-            self.rho = 1.2754   # kg/m^3
-            self.V = 100        # m/s
-            self.L = 2          # N
-            self.D = 3          # N
+            self.rho = 1.2754       # kg/m^3
+            self.V = 100            # m/s
+            self.S = 25             # m^2
+            self.L = 5000           # N
+            self.D = 1000           # N
 
     class Result: # initalizating struct for results
         def __init__(self):
@@ -16,21 +17,24 @@ class Static_Study: # OBJECT ===================================================
             self.C_D = 0
 
     # METHODS -----------------------------------------------------------------------
-    # constructor
+    ## constructor
     def __init__(self): 
         self.data = self.Data()
         self.result = self.Result()
         
         self.coeficientes()
 
-    # calculate aerodinamic coeficients 
+    ## calculate aerodinamic coeficients 
     def coeficientes(self):
-        self.result.C_L = self.data.L / (0.5 * self.data.rho * self.data.V**2)
-        self.result.C_D = self.data.D / (0.5 * self.data.rho * self.data.V**2)
+        L = self.data.L
+        D = self.data.D 
+        rho = self.data.rho#
+        V = self.data.V 
+        S = self.data.S
+
+        self.result.C_L = L / (0.5 * rho * V**2 * S)
+        self.result.C_D = D / (0.5 * rho * V**2 * S)
 
 # CALL ==============================================================================
-# 🔹 Criando o objeto da classe
 aero = Static_Study()
-
-# 🔹 Acessando os resultados com a estrutura organizada
 print(f"C_L: {aero.result.C_L}, C_D: {aero.result.C_D}")
