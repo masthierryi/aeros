@@ -1,0 +1,37 @@
+import os  
+os.system('cls')
+
+import numpy as np
+
+class margem_estatica:  # OBJECT ========================================================
+    # PROPERTIES --------------------------------------------------------------------
+    class Data:  # struct for problem data
+        def __init__(self):
+            # parâmetros 
+
+
+    class Result:  # initializing struct for results
+        def __init__(self):
+            self.L = 0
+            self.D = 0
+            self.C_L = 0
+            self.C_D = 0
+            self.StolSpeed = 0
+
+    # METHODS -----------------------------------------------------------------------
+    # constructor
+    def __init__(self): 
+        self.data = self.Data()
+        self.result = self.Result()
+
+        self.coeficientes_aprox()  # Calcula coeficientes aproximados
+        self.aero_forces()         # Calcula as forças aerodinâmicas
+        self.coeficientes()        # Calcula coeficientes mais exatos
+
+    # Calcula C_L e C_D a partir do ângulo de ataque e número de Reynolds 
+    def coeficientes_aprox(self):
+        efe = 2
+
+# CALL ==============================================================================
+aero = margem_estatica()
+print(f"C_L: {aero.result.C_L}, C_D: {aero.result.C_D}, L: {aero.result.L}, D: {aero.result.D}, StolSpeed: {aero.result.StolSpeed}")
