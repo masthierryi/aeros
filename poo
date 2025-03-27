@@ -3,77 +3,79 @@ os.system('cls')
 
 import numpy as np
 
-class Static_Study:  # OBJECT ========================================================
-    # PROPERTIES --------------------------------------------------------------------
-    class Data:  # struct for problem data
-        def __init__(self):
-            # parâmetros ar
-            self.rho = 1.17        # Densidade do ar (kg/m³)
-            self.V = 18.59             # Velocidade do fluxo (m/s)
-            self.mu = 1.789e-5       # Viscosidade dinâmica do ar (Pa·s)
-            self.g = 9.81           # Gravidade (m/s²)
-            self.alpha = 5          # Ângulo de ataque (graus)
-            self.Re = 472803.242    # Reynolds
-            # self.Mach = 0.055
+class Static_Study:  
+    class Data:
+        def __init__(s, W_type="max"):  
+            s.rho = 1.17      # Densidade do ar (kg/m³)
+            s.V = 18.59       # Velocidade do fluxo (m/s)
+            s.mu = 1.789e-5   # Viscosidade dinâmica do ar (Pa·s)
+            s.g = 9.81        # Gravidade (m/s²)
+            s.alpha = 5       # Ângulo de ataque (graus)
+            s.Re = 472803.242 # Reynolds
+            s.Mach = 0.055    # Número de Mach
 
+            # Parâmetros da aeronave
+            s.m_max = 20      
+            s.m_min = 5       
+            s.m_vazia = 5     
+            s.CUmin = 5       
 
-            # parametros aeronave
-            self.m = 7            # Massa da aeronave (kg)
-            self.W = self.m*self.g  # peso da aeronave
+            # Pesos (agora são variáveis separadas)
+            s.W_max = s.m_max * s.g     
+            s.W_min = (s.CUmin + s.m_vazia) * s.g  
 
-            # parametros da asa
-            # self.b = 2.5              # envergadura
-            # self.C_t = 0.25            # corda na ponta
-            # self.C_r = 0.5            # corda na raiz
-            # self.C_m_g = 0          # corda media geométrica
-            # corda média aerodinâmica (m)
-            self.C_m_a = (2/3)*self.C_r*((1+self.tap+self.C_r**2)/(1+self.tap))        
-            # self.sweeping = 0       # enflexamento
-            self.tap = self.C_t/self.C_r   # afilamento
-            # self.gamma = 0          # angulo do diedro
-            # self.deltay = 0         # espessura relativa
-            self.S = 0.9             # area da asa (m²)
+            # Define qual peso será usado
+            s.W = s.W_max if W_type == "max" else s.W_min
 
-    class Result:  # initializing struct for results
-        def __init__(self):
-            self.L = 0
-            self.D = 0
-            self.C_L = 0
-            self.C_D = 0
-            self.StolSpeed = 0
+            # Parâmetros da asa
+            s.b = 2.5          
+            s.C_t = 0.25       
+            s.C_r = 0.5        
+            s.sweeping = 0     
+            s.tap = s.C_t / s.C_r    
+            s.gamma = 0        
+            s.deltay = 0       
+            s.S = 0.9          
 
-    # METHODS -----------------------------------------------------------------------
-    # constructor
-    def __init__(self): 
-        self.data = self.Data()
-        self.result = self.Result()
+            # Cálculo da corda média aerodinâmica (C_m_a)
+            s.C_m_a = (2 / 3) * s.C_r * ((1 + s.tap + s.C_r ** 2) / (1 + s.tap))
 
-        self.coeficientes_aprox()  # Calcula coeficientes aproximados
-        self.aero_forces()         # Calcula as forças aerodinâmicas
-        self.coeficientes()        # Calcula coeficientes mais exatos
+            # Estabilizador horizontal
+            s.tap_EH = 0.5
+            s.C_r_EH = s.S / ((s.tap_EH + 1) * (s.b / 2))  
+            s.C_t_EH = s.tap_EH * s.C_r_EH  
+            s.offset_tip_EH = s.C_r_EH - s.C_t_EH  
+            s.C_m_a_EH = (2 / 3) * s.C_r * ((1 + s.tap_EH + s.C_r ** 2) / (1 + s.tap_EH))
 
-    # Calcula C_L e C_D a partir do ângulo de ataque e número de Reynolds 
-    def coeficientes_aprox(self):
-        C_f = 0.074 / (self.data.Re**0.2) # coeficiente de atrito C_d para fluxo turbulento                
-        self.result.C_D = C_f  # considerando apenas o arrasto de pele
+    class Result:  
+        def __init__(s):
+            s.L = 0
+            s.D = 0
+            s.C_L = 0
+            s.C_D = 0
+            s.StolSpeed = 0
 
-    # Calcula as forças aerodinâmicas 
-    def aero_forces(self):
-        # Lift force
-        self.result.L = self.data.W
-        # Drag force
-        self.result.D = 0.5 * self.data.rho * self.data.V**2 * self.data.S * self.result.C_D
+    def __init__(s, W_type="max"):  
+        s.data = s.Data(W_type)  
+        s.result = s.Result()
 
-    #  Calcula coeficientes a partir das forças aerodinâmicas
-    def coeficientes(self):
-        # Lift coefficient
-        self.result.C_L = self.result.L / (0.5 * self.data.rho * self.data.V**2 * self.data.S)
-        # Drag coefficient
-        self.result.C_D = self.result.D / (0.5 * self.data.rho * self.data.V**2 * self.data.S)
-        # Stol speed
-        self.result.StolSpeed = np.sqrt((2*self.data.W)/(self.data.rho * self.data.S * self.result.C_L))
+        s.coeficientes_aprox()  
+        s.aero_forces()         
+        s.coeficientes()        
 
+    def coeficientes_aprox(s):
+        C_f = 0.074 / (s.data.Re ** 0.2)                 
+        s.result.C_D = C_f  
 
-# CALL ==============================================================================
-aero = Static_Study()
+    def aero_forces(s):
+        s.result.L = s.data.W  
+        s.result.D = 0.5 * s.data.rho * s.data.V**2 * s.data.S * s.result.C_D
+
+    def coeficientes(s):
+        s.result.C_L = s.result.L / (0.5 * s.data.rho * s.data.V**2 * s.data.S)
+        s.result.C_D = s.result.D / (0.5 * s.data.rho * s.data.V**2 * s.data.S)
+        s.result.StolSpeed = np.sqrt((2 * s.data.W) / (s.data.rho * s.data.S * s.result.C_L))
+
+# Exemplo de chamada
+aero = Static_Study(W_type="max")  # Use "min" para W_min
 print(f"C_L: {aero.result.C_L}, C_D: {aero.result.C_D}, L: {aero.result.L}, D: {aero.result.D}, StolSpeed: {aero.result.StolSpeed}")
