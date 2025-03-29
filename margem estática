@@ -6,21 +6,38 @@ import matplotlib.pyplot as plt
 
 class MargemEstatica:  
     class Data:  
+        # PROPRIEDADES ==============================================================
         def __init__(self):
-            # Dados de entrada (posição do CG e margem estática em % da CMA)
-            self.cg_positions = np.array([36, 38, 39, 40])  # Exemplo
-            self.static_margin = np.array([5.2, 3.8, 2.4, 0.8])  # Exemplo
+            # (tab. 5.59, Chiabi, 2014, TCC)
+            self.h = np.array([0.01, 0.6, 0.4, 0.2, 1])  # [%] Posição do C.G.
 
-    # CALL ==============================================================================  
-    """ CONSTRUCTOR """
-    def __init__(self): 
+            self.h_Owb = 0.1856     # [%] Posição do centro aerodinâmico do conjunto asa-fuselagem
+            self.Vvt = 0.735        # [~] Volume de cauda
+            self.a_1 = 3.791        # [rad^-1] Inclinação (∂𝐶𝑙𝐸𝐻⁄∂α) da empenagem horizontal
+            self.epsl_alpha = 0.781 # [~] Efeito do downwash
+            self.alpha_wb = 5.09    # [rad^-1] Inclinação (∂𝐶𝑙⁄∂α) do conjunto asa-fuselagem
+
+    # MÉTODOS =======================================================================
+    def __init__(self): # construtor ------------------------------------------------
         self.data = self.Data()  
+        
+        self.calc_K_n()
 
-    """ PLOT """
-    def plot(self):   
-        # Criando gráfico
+    def calc_K_n(self): # calcula a margem estatica ---------------------------------
+        # reescrevendo os valores por conveniência
+        h = self.data.h
+        h_Owb = self.data.h_Owb
+        Vvt = self.data.Vvt
+        a_1 = self.data.a_1
+        epsl_alpha = self.data.epsl_alpha
+        alpha_wb = self.data.alpha_wb
+
+        # margem estática
+        self.K_n = (h_Owb + Vvt * a_1 * (epsl_alpha / alpha_wb)) - h  
+
+    def plot(self):  # plot margem estática -----------------------------------------
         plt.figure(figsize=(8, 6))
-        plt.plot(self.data.cg_positions, self.data.static_margin, 'bo-', label="Margem Estática")
+        plt.plot(self.data.h, self.K_n, 'bo-', label="Margem Estática")
 
         # Linha limite de estabilidade (Kn = 0)
         plt.axhline(y=0, color='r', linestyle='--', label="Limite de Estabilidade (Kn = 0)")
@@ -31,9 +48,8 @@ class MargemEstatica:
         plt.legend()
         plt.grid(True)
 
-        # Mostrar gráfico
         plt.show()
 
-# CALL ==============================================================================  
+# CALL ==============================================================================
 aero = MargemEstatica()  
-aero.plot()  
+aero.plot()
