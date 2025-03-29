@@ -40,10 +40,10 @@ class MargemEstatica:
         plt.plot(self.data.h, self.K_n, 'bo-', label="Margem Estática")
 
         # Linha limite de estabilidade (Kn = 0)
-        plt.axhline(y=0, color='r', linestyle='--', label="Limite de Estabilidade (Kn = 0)")
+        plt.axhline(y=0, color='r', linestyle='--', label="Limite de Estabilidade (K_n = 0)")
 
         plt.xlabel("Posição do C.G. (% da corda média aerodinâmica)")
-        plt.ylabel("Margem de Estabilidade (KN) [%]")
+        plt.ylabel("Margem de Estabilidade (K_n) [%]")
         plt.title("Margem de Estabilidade Longitudinal em Função do C.G.")
         plt.legend()
         plt.grid(True)
